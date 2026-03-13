@@ -1,0 +1,14 @@
+packages:
+  "framer-motion": "For premium smooth animations and layout transitions"
+  "react-hook-form": "For robust form state management"
+  "@hookform/resolvers": "For Zod schema validation integration"
+  "clsx": "For conditional class merging"
+  "tailwind-merge": "For elegant class string merging"
+
+images:
+  - path: "artifacts/listing-pilot/public/images/luxury-bg.png"
+    description: "Abstract luxury dark background with very subtle deep gold and champagne gradients, modern glassmorphism aesthetic, 8k resolution, suitable for a premium real estate web app background"
+    aspect_ratio: "16:9"
+
+notes:
+  - using @workspace/api-client-react for TanStack Query hooks generated from OpenAPI

@@ -1,0 +1,246 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: ListingPilot AI API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: listings
+    description: Listing generation operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /listings/generate:
+    post:
+      operationId: generateListing
+      tags: [listings]
+      summary: Generate listing content
+      description: Generate AI-powered real estate listing content from property details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateListingRequest"
+      responses:
+        "200":
+          description: Generated listing content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateListingResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /listings/analyze:
+    post:
+      operationId: analyzeListing
+      tags: [listings]
+      summary: Analyze and optimize an existing listing URL
+      description: Fetches and extracts metadata from a listing URL, then generates AI-powered improvements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeListingRequest"
+      responses:
+        "200":
+          description: Analysis and improvement results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeListingResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Could not extract content from URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeListingResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    GenerateListingRequest:
+      type: object
+      properties:
+        location:
+          type: string
+        propertyType:
+          type: string
+        listingPurpose:
+          type: string
+          enum: [sale, rent]
+        bedrooms:
+          type: integer
+          minimum: 0
+        bathrooms:
+          type: number
+          minimum: 0
+        sizeSqft:
+          type: integer
+          minimum: 1
+        amenities:
+          type: string
+      required:
+        - location
+        - propertyType
+        - listingPurpose
+        - bedrooms
+        - bathrooms
+        - sizeSqft
+    GenerateListingResponse:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        instagramCaption:
+          type: string
+        hashtags:
+          type: array
+          items:
+            type: string
+        priceRange:
+          $ref: "#/components/schemas/PriceRange"
+        rentRange:
+          $ref: "#/components/schemas/PriceRange"
+      required:
+        - title
+        - description
+        - instagramCaption
+        - hashtags
+        - priceRange
+        - rentRange
+    PriceRange:
+      type: object
+      properties:
+        min:
+          type: number
+        max:
+          type: number
+        currency:
+          type: string
+        period:
+          type: string
+        formatted:
+          type: string
+          description: Pre-formatted price string with correct currency symbol and code
+      required:
+        - min
+        - max
+        - currency
+        - formatted
+    AnalyzeListingRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          description: The listing URL to analyze
+        platform:
+          type: string
+          description: Optional platform hint (Zillow, Airbnb, etc.)
+        notes:
+          type: string
+          description: Optional agent notes or optimization goals
+      required:
+        - url
+    AnalyzeListingResponse:
+      type: object
+      properties:
+        originalTitle:
+          type: string
+          description: Extracted original title from the page
+        originalDescription:
+          type: string
+          description: Extracted original description from the page
+        detectedImage:
+          type: string
+          description: OG image URL detected from the page
+          nullable: true
+        improvedTitle:
+          type: string
+          description: AI-improved title
+        improvedDescription:
+          type: string
+          description: AI-improved description
+        pricingSuggestion:
+          type: string
+          description: Pricing strategy recommendation
+        seoKeywords:
+          type: array
+          items:
+            type: string
+          description: Recommended SEO keywords
+        listingScore:
+          type: integer
+          description: Score from 0–100 rating the original listing quality
+        platform:
+          type: string
+          description: Detected or provided platform name
+        extractionStatus:
+          type: string
+          enum: [success, partial, blocked]
+          description: Whether metadata was fully extracted, partially, or blocked
+      required:
+        - originalTitle
+        - originalDescription
+        - improvedTitle
+        - improvedDescription
+        - pricingSuggestion
+        - seoKeywords
+        - listingScore
+        - platform
+        - extractionStatus
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
